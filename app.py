@@ -27,7 +27,7 @@ INDIAN_AIRLINE_CODES = {
 }
 
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'YOUR_GEMINI_API_KEY')
-genai.configure(api_key="AIzaSyDNvTFTbJqR5R0g7-Tr6RQHv0u8Bb3ZPQU")
+genai.configure(api_key="AQ.Ab8RN6JMVS2sQT5PKoEIoRGkTRmSew-Df1pFg6pSt_nld1U7yA")
 
 AVIATIONSTACK_API_KEY = os.environ.get('AVIATIONSTACK_API_KEY', '')
 
