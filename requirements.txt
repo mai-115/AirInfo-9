@@ -4,3 +4,4 @@ pandas
 selenium
 google-generativeai 
 gunicorn==23.0.0
+matplotlib
