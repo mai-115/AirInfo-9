@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Flights - AirInfo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<header class="site-header">
+    <div class="site-header-inner">
+        <h1 class="site-title">AirInfo</h1>
+        <p class="site-tagline">Indian Airlines Flight Dashboard</p>
+    </div>
+</header>
+<div class="results-page">
+    <div class="results-header">
+        <h2 class="mb-0">Available Bookings for Airline: {{ airline }}</h2>
+    </div>
+
+    <div class="results-meta">
+        <span><strong>From:</strong> {{ origin|default('—') }}</span>
+        <span><strong>To:</strong> {{ destination|default('—') }}</span>
+        <span><strong>Date:</strong> {{ date|default('Today') }}</span>
+    </div>
+
+    {% if flights and flights|length > 0 %}
+    <div class="table-responsive mb-4">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-primary">
+                <tr>
+                    <th>Airline</th>
+                    <th>Flight Number</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Departure</th>
+                    <th>Arrival</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for flight in flights %}
+                <tr>
+                    <td>{{ flight.airline }}</td>
+                    <td>{{ flight.flight_number }}</td>
+                    <td>{{ flight.departure_airport }}</td>
+                    <td>{{ flight.arrival_airport }}</td>
+                    <td>{{ flight.departure_time }}</td>
+                    <td>{{ flight.arrival_time }}</td>
+                    <td>{{ flight.status }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-warning">No bookings found for this airline or API limit reached. Please try another code.</div>
+    {% endif %}
+
+    {% if plot_routes %}
+    <div class="chart-card">
+        <h5>Popular Routes (Bar Chart)</h5>
+        <img src="/static/{{ plot_routes }}" alt="Popular Routes Bar Chart" class="img-fluid">
+    </div>
+    {% endif %}
+
+    {% if plot_demand %}
+    <div class="chart-card">
+        <h5>High Demand Locations (Bar Chart)</h5>
+        <img src="/static/{{ plot_demand }}" alt="High Demand Locations Bar Chart" class="img-fluid">
+    </div>
+    {% endif %}
+
+    {% if plot_pie %}
+    <div class="chart-card">
+        <h5>Flight Frequency by Route (Pie Chart)</h5>
+        <img src="/static/{{ plot_pie }}" alt="Flight Frequency Pie Chart" class="img-fluid" style="max-width:400px;">
+    </div>
+    {% endif %}
+
+    <h3 class="mt-4">Gemini AI Insights</h3>
+    <div class="alert alert-info">{{ ai_insights }}</div>
+
+    {% if not ai_insights and raw_gemini %}
+    <div class="alert alert-warning mt-4"><strong>Raw Gemini Output:</strong><br><pre style="white-space: pre-line; margin: 0; background: transparent; color: inherit;">{{ raw_gemini }}</pre></div>
+    {% endif %}
+
+    <a href="/" class="btn btn-secondary mt-4">&#8592; Back to Search</a>
+</div>
+</body>
+</html>

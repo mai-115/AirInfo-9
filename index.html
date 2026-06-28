@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AirInfo – Indian Airlines Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="site-header-inner">
+            <h1 class="site-title">AirInfo</h1>
+            <p class="site-tagline">Indian Airlines Flight Dashboard</p>
+        </div>
+    </header>
+    <div class="main-grid-layout">
+        <main class="main-content">
+            <div class="main-content-grid">
+                <div class="search-section">
+                    <h1>Search Your Flight</h1>
+                    <p class="lead-text glass-card">Airline information is retrieved in real-time from the AviationStack API, which aggregates global flight data. Enter an Indian airline's IATA code and your API key to get live flight schedules, statuses, and AI-powered insights. This dashboard helps you explore popular routes, demand trends, and more for Indian airlines.</p>
+                    <form method="post" action="/scrape" class="search-form">
+                        {% if error %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                        {% endif %}
+                        <div class="mb-3">
+                            <label for="airline" class="form-label">Airline IATA Code</label>
+                            <input type="text" class="form-control" id="airline" name="airline" placeholder="e.g. AI, 6E, SG" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="aviationstack_api_key" class="form-label">AviationStack API Key</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="aviationstack_api_key" name="aviationstack_api_key" placeholder="Enter your AviationStack API key" {% if not error %}value=""{% endif %} required>
+                                <button class="btn" type="button" id="toggleApiKey" onclick="toggleApiKeyVisibility()">Show</button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="time_range" class="form-label">Time Range</label>
+                            <select class="form-select" id="time_range" name="time_range">
+                                <option value="any">Any</option>
+                                <option value="morning">Morning (05:00-12:00)</option>
+                                <option value="afternoon">Afternoon (12:00-17:00)</option>
+                                <option value="evening">Evening (17:00-23:00)</option>
+                                <option value="night">Night (23:00-05:00)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Flight Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="any">Any</option>
+                                <option value="scheduled">Scheduled only</option>
+                            </select>
+                        </div>
+                        <script>
+                        function toggleApiKeyVisibility() {
+                            var input = document.getElementById('aviationstack_api_key');
+                            var btn = document.getElementById('toggleApiKey');
+                            if (input.type === 'password') {
+                                input.type = 'text';
+                                btn.textContent = 'Hide';
+                            } else {
+                                input.type = 'password';
+                                btn.textContent = 'Show';
+                            }
+                        }
+                        </script>
+                        <button type="submit" class="btn btn-primary">Get Insights</button>
+                    </form>
+                </div>
+                <div class="iata-section">
+                    <h2 class="section-title">What is IATA?</h2>
+                    <div class="glass-card info-panel">
+                        <p><strong>IATA</strong> stands for the <strong>International Air Transport Association</strong>. It is a global trade association for airlines, and it assigns unique two-letter codes (IATA codes) to airlines and airports worldwide. These codes are used to identify airlines (like <b>AI</b> for Air India, <b>6E</b> for IndiGo) and airports in flight schedules, tickets, and data systems.</p>
+                        <ul>
+                            <li><b>Airline IATA Code:</b> A two-letter code (e.g., AI, 6E, SG) that uniquely identifies an airline.</li>
+                            <li><b>Why is it important?</b> It ensures accuracy and consistency in airline and airport identification across the world.</li>
+                        </ul>
+                        <p>When searching for flights, use the correct IATA code for the airline you are interested in.</p>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="mt-4 iata-section-wrapper">
+                <h5>Common IATA Codes for Indian Airlines</h5>
+                <ul class="list-group list-group-flush iata-list">
+                    <li class="list-group-item"><strong>AI</strong> – Air India</li>
+                    <li class="list-group-item"><strong>6E</strong> – IndiGo</li>
+                    <li class="list-group-item"><strong>UK</strong> – Vistara</li>
+                    <li class="list-group-item"><strong>SG</strong> – SpiceJet</li>
+                    <li class="list-group-item"><strong>IX</strong> – Air India Express</li>
+                    <li class="list-group-item"><strong>I5</strong> – AirAsia India</li>
+                    <li class="list-group-item"><strong>9I</strong> – Alliance Air</li>
+                    <li class="list-group-item"><strong>QP</strong> – Akasa Air</li>
+                    <li class="list-group-item"><strong>S5</strong> – Star Air</li>
+                </ul>
+                <div class="iata-hint mt-2">Enter the IATA code for your Indian airline above. For more, see <a href="https://en.wikipedia.org/wiki/List_of_airlines_of_India" target="_blank">this list</a>.</div>
+            </div>
+            <hr>
+            <!-- Chart and table placeholders -->
+            <div id="insights">
+                {% if insights %}
+                    {% if insights.error %}
+                        <div class="alert alert-danger">{{ insights.error }}</div>
+                    {% else %}
+                        <h3>Flights Data (via Gemini AI)</h3>
+                        <h3>Insights for {{ origin }} to {{ destination }} on {{ date }}</h3>
+                        <p><strong>Total Flights:</strong> {{ insights.total_flights }}</p>
+                        <h5>Popular Routes</h5>
+                        <table class="table table-bordered">
+                            <thead><tr><th>Route</th><th>Flights</th></tr></thead>
+                            <tbody>
+                            {% for route, count in insights.popular_routes %}
+                                <tr><td>{{ route }}</td><td>{{ count }}</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        <h5>High Demand Periods</h5>
+                        <ul>
+                            {% for period, count in insights.high_demand_periods %}
+                                <li>{{ period }}: {{ count }} flights</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endif %}
+            </div>
+            <hr>
+        </main>
+    </div>
+    <!-- Footer -->
+    <footer class="main-footer">
+      <div class="footer-grid">
+        <div class="footer-section">
+          <h5>More Flights IATA Lists</h5>
+          <ul class="footer-links">
+            <li><a href="https://en.wikipedia.org/wiki/List_of_airlines_of_India" target="_blank">Indian Airlines (Wikipedia)</a></li>
+            <li><a href="https://en.wikipedia.org/wiki/List_of_airlines" target="_blank">Global Airlines (Wikipedia)</a></li>
+            <li><a href="https://en.wikipedia.org/wiki/List_of_airports_in_India" target="_blank">Indian Airports</a></li>
+            <li><a href="https://www.iata.org/en/publications/directories/code-search/" target="_blank">IATA Code Search (Official)</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h5>FAQ</h5>
+          <div class="footer-faq">
+            <strong>Q: What is an IATA code?</strong>
+            <div>A: A unique two-letter code assigned to airlines and airports by the International Air Transport Association.</div>
+            <strong>Q: Why do I need an API key?</strong>
+            <div>A: The API key allows you to access live flight data from AviationStack.</div>
+            <strong>Q: Can I search for non-Indian airlines?</strong>
+            <div>A: This dashboard is focused on Indian airlines only. Please use an IATA code from the list above.</div>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h5>Contact</h5>
+          <div class="footer-contact">
+            <p><strong>Email:</strong> maitreyeegore115@gmail.com</p>
+            <p><strong>Phone:</strong> +91 9067400949</p>
+            <p><strong>Hours:</strong> 9:00 AM – 8:00 PM (IST), Mon–Sat</p>
+            <p>For urgent queries, please mention "URGENT" in your message subject.</p>
+          </div>
+        </div>
+        <div class="footer-section footer-copyright">
+          <div>&copy; {{ year|default(2024) }} AirInfo Dashboard<br>Made with Flask</div>
+        </div>
+      </div>
+    </footer>
+</body>
+</html> 
